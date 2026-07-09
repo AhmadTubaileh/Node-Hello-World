@@ -1,17 +1,10 @@
+require("dotenv").config();
 
 const http = require("http");
 
-const server = http.createServer((req,res) => {
-
-    res.writeHead(200,{
-        "Content-Type":"application/json"
-    });
-
-    res.end(JSON.stringify({
-        "Message":"Hello world"
-    }));
+const server = http.createServer((req,res) =>{
+    res.end("Hello world!");
 
 });
 
-const PORT = 3000;
-server.listen(PORT);
+server.listen(process.env.PORT,()=>{console.log(process.env);});
