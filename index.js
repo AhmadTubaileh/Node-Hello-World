@@ -34,7 +34,7 @@ app.get("/users/:id",(req,res)=>{
 
     if(!user){
         res.status(404).json({
-            "msg":"user not found"
+            "msg":"user not found nigga"
         });
     }
     res.json(user);
@@ -52,8 +52,39 @@ app.post("/users",(req,res)=>{
     res.status(201).json(newUser);
 });
 
+app.patch("/users/:id",(req,res)=>{
+    const id = Number(req.params.id);
+    const name = req.body.name;
+
+    const user = users.find(user => user.id === id);
+    if (!user) {
+        return res.status(404).json({
+            "msg": "User not found nigga"
+        });
+    }
+
+    if(req.body.name){
+        user.name = req.body.name;
+    }
+
+    res.json(user);
+});
 
 
+app.delete("/users/:id",(req,res)=>{
+    const id = Number(req.params.id);
+    const index = users.findIndex(u=>u.id===id);
+
+    if (index===-1) {
+        return res.status(404).json({
+            msg: "User not found"
+        });
+    }
+    users.splice(index,1);
+    res.json({
+        "msg": "Deleted successfully nigga"
+    });
+});
 
 
 
