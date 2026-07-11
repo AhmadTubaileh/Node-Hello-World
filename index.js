@@ -5,14 +5,14 @@ const app = express();
 
 app.use(express.json());
 
-const users = [
+const toDo = [
     {
         "id":1,
-        "name":"Ahmad"
+        "task":"get a job"
     },
     {
         "id":2,
-        "name":"Sami"
+        "taskName":"train for full stack"
     }
 ];
 
@@ -24,65 +24,65 @@ app.get("/about",(req,res)=>{
     res.end("about");
 });
 
-app.get("/users",(req,res)=>{
-    res.send(users);
+app.get("/toDo",(req,res)=>{
+    res.send(toDo);
 });
 
-app.get("/users/:id",(req,res)=>{
+app.get("/toDo/:id",(req,res)=>{
     const id = Number(req.params.id);
-    const user = users.find(u=>u.id === id);
+    const task = toDo.find(task=>task.id === id);
 
-    if(!user){
+    if(!task){
         res.status(404).json({
-            "msg":"user not found nigga"
+            "msg":"task not found."
         });
     }
-    res.json(user);
+    res.json(task);
 
 });
 
 
-app.post("/users",(req,res)=>{
-    const newUser={
-        id:users.length+1,
-        name:req.body.name
+app.post("/toDo",(req,res)=>{
+    const newTask={
+        id:toDo.length+1,
+        taskName:req.body.task
     };
 
-    users.push(newUser);
-    res.status(201).json(newUser);
+    toDo.push(newTask);
+    res.status(201).json(newTask);
 });
 
-app.patch("/users/:id",(req,res)=>{
+app.patch("/toDo/:id",(req,res)=>{
     const id = Number(req.params.id);
-    const name = req.body.name;
+    const taskName = req.body.task;
 
-    const user = users.find(user => user.id === id);
-    if (!user) {
+    const task = toDo.find(task => task.id === id);
+    if (!task) {
         return res.status(404).json({
-            "msg": "User not found nigga"
+            "msg": "task not found"
         });
     }
 
-    if(req.body.name){
-        user.name = req.body.name;
+    if(taskName){
+        task.taskName = taskName;
     }
 
-    res.json(user);
+    res.json(task);
 });
 
 
-app.delete("/users/:id",(req,res)=>{
+app.delete("/toDo/:id",(req,res)=>{
     const id = Number(req.params.id);
-    const index = users.findIndex(u=>u.id===id);
+    const index = toDo.findIndex(task=>task.id===id);
 
     if (index===-1) {
         return res.status(404).json({
-            msg: "User not found"
+            msg: "task not found"
         });
     }
-    users.splice(index,1);
+    toDo.splice(index,1);
     res.json({
-        "msg": "Deleted successfully nigga"
+        "msg": "Deleted successfully"
     });
 });
 
