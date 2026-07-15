@@ -26,10 +26,7 @@ router.post("/",(req,res)=>{
             {
                 username:user.username
             },
-            process.env.JWT_SECRET,
-            {
-                expiresIn:"15s"
-            }
+            process.env.JWT_SECRET
         );
 
         res.json({
