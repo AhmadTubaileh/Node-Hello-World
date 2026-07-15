@@ -1,16 +1,17 @@
 
 const express = require("express");
+const registerSchema = require("../schemas/auth.schema");
 const router = express.Router();
-
 const users = require("../data/users");
+
 
 router.get("/",(req,res)=>{
     res.send(users);
 });
 
-router.get("/:username",(req,res)=>{
-    const username = req.params.username;
-    const user = users.find(user=>user.username === username);
+router.get("/:email",(req,res)=>{
+    const email = req.params.email;
+    const user = users.find(user=>user.email === email);
 
     if(!user){
         res.status(404).json({
@@ -20,54 +21,58 @@ router.get("/:username",(req,res)=>{
     res.json(user);
 });
 
+
 router.post("/",(req,res)=>{
-    const {username,password} = req.body;
+    //const {email,password} = req.body;
+    const result = registerSchema.safeParse(req.body);
 
-    if(username && password){
-        const newUser = {
-            "username": username,
-            "password": password
-        };
-        users.push(newUser);
-        res.status(201).json(newUser);
-
-    }else{
-        res.status(400).json({
-            "msg":"username or password is missing"
-        });
+    if(!result.success){
+        return res.status(400).json({
+            msg: result.error.issues
+        })
     }
+   
+    const {email,password} = result.data;
+    const newUser = {
+        "email": email,
+        "password": password
+    };
+    users.push(newUser);
+    res.status(201).json(newUser);
+
+    
 });
 
-router.patch("/:username",(req,res)=>{
-    const username = req.params.username;
-    const user = users.find(user=>user.username === username);
+router.patch("/:email",(req,res)=>{
+    const email = req.params.email;
+    const user = users.find(user=>user.email === email);
 
     if(!user){
     res.status(404).json({
-        "msg":"user not found"
+        "msg":"email not found"
     });
     }
 
-    if(req.body.username){
-        user.username = req.body.username;
+    if(req.body.email){
+        user.email = req.body.email;
         res.json({
-            "New username": user.username
+            "New email": user.email
         });
     }else{
          res.status(400).json({
-            "msg":"username or password is missing"
+            "msg":"email or password is missing"
         });
     }
     
 });
 
-router.delete("/:username",(req,res)=>{
-    const username = req.params.username;
-    const index = users.findIndex(user=>user.username === username);
+router.delete("/:email",(req,res)=>{
+    const email = req.params.email;
+    const index = users.findIndex(user=>user.email === email);
 
     if (index===-1) {
         return res.status(404).json({
-            "msg": "username not found"
+            "msg": "email not found"
         });
     }
     users.splice(index,1);

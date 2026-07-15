@@ -6,13 +6,14 @@ const jwt = require("jsonwebtoken");
 
 
 router.post("/",(req,res)=>{
-    const {username,password} = req.body;
+    const {email,password} = req.body;
+    
 
-    if(username && password){
-        const user = users.find(u=>u.username === username);
+    if(email && password){
+        const user = users.find(u=>u.email === email);
         if(!user){
             return res.status(404).json({
-                "msg":"Could not find username"
+                "msg":"Could not find email"
             });
         }
         
@@ -24,11 +25,11 @@ router.post("/",(req,res)=>{
 
         const token =jwt.sign(
             {
-                username:user.username
+                email:user.email
             },
             process.env.JWT_SECRET,
             {
-                expiresIn:"15s"
+                expiresIn:"1m"
             }
         );
 
@@ -41,7 +42,7 @@ router.post("/",(req,res)=>{
 
     }else{
         res.status(400).json({
-            "msg":"username or password is missing"
+            "msg":"email or password is missing"
         });
     }
 });
