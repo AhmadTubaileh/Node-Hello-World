@@ -28,7 +28,8 @@ router.post("/",(req,res)=>{
 
     if(!result.success){
         return res.status(400).json({
-            msg: result.error.issues
+            msg: result.error.issues[0].message,
+            code: result.error.issues[0].code
         })
     }
    
