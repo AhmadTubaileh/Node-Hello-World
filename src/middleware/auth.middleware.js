@@ -21,10 +21,16 @@ module.exports = (req,res,next)=>{
         next();
     }catch(err){
 
+        if(err.name === "TokenExpiredError"){
+            return res.status(401).json({
+            msg:"Token has expired"
+        });
+        
+        }else{
             return res.status(401).json({
             msg:"Invalid Token"
             });
-        
+        }
     }
 
 };
