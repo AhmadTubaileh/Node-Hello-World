@@ -1,61 +1,84 @@
 const express = require("express");
 const router = express.Router();
-const users = require("../data/users");
-const jws = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const registerSchema = require("../schemas/auth.schema");
+const pool = require("../database/db");
 
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
+async function getUser(email) {
+  const result = await pool.query("SELECT * FROM users WHERE email=$1", [
+    email,
+  ]);
+  return result;
+}
 
-  if (email && password) {
-    const user = users.find((u) => email === u.email);
+async function insertUser(email, password) {
+  const result = await pool.query(
+    `
+    INSERT INTO users (email,password)
+    VALUES ($1,$2)
+    RETURNING *
+    `,
+    [email, password],
+  );
+  return result;
+}
 
-    if (!user) {
-      return res.status(404).json({
-        msg: "Email not found",
-      });
-    } else {
-      return res.status(401).json({
-        msg: "Password mismatch",
-      });
-    }
+router.post("/login", async (req, res) => {
+  const zodResult = registerSchema.safeParse(req.body);
 
-    const token = jwt.sign(
-      {
-        email: user.email,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1m",
-      },
-    );
-
-    res.json({
-      msg: "Logged in successfully",
-      token: token,
-    });
-  } else {
-    res.status(400).json({
-      msg: "Email and Password must be provided.",
+  if (!zodResult.success) {
+    return res.status(400).json({
+      msg: zodResult.error.issues[0].message,
     });
   }
+  const { email, password } = zodResult.data;
+  const getUserResult = await getUser(email);
+  const user = getUserResult.rows[0];
+
+  if (!user) {
+    return res.status(404).json({
+      msg: "Email not found",
+    });
+  } else if (user.password !== password) {
+    return res.status(401).json({
+      msg: "Password mismatch",
+    });
+  }
+
+  const token = jwt.sign(
+    {
+      email: user.email,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1m",
+    },
+  );
+
+  res.json({
+    msg: "Logged in successfully",
+    token: token,
+  });
 });
 
-router.post("/register", (req, res) => {
-  const result = registerSchema.safeParse(req.body);
+router.post("/register", async (req, res) => {
+  const zodResult = registerSchema.safeParse(req.body);
 
-  if (!result.success) {
+  if (!zodResult.success) {
     return res.status(400).json({
-      msg: result.error.issues[0].message,
-      code: result.error.issues[0].code,
+      msg: zodResult.error.issues[0].message,
+      code: zodResult.error.issues[0].code,
     });
   }
-  const {email,password} = result.data;
+  const { email, password } = zodResult.data;
   const newUser = {
     email: email,
     password: password,
   };
-  users.push(newUser);
+
+  const insertUserResult = await insertUser(email, password);
+  console.log(insertUserResult.rows[0]);
+
   res.status(201).json(newUser);
 });
 
